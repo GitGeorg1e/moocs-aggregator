@@ -1,64 +1,126 @@
+import { useState, useEffect } from 'react';
+import { getFilterOptions } from '../api/courses';
+import './CourseFilters.css';
+
+// Map language codes to readable names
+const LANGUAGE_LABELS = {
+  'en': 'English',
+  'zh': 'Chinese (中文)',
+  'es': 'Spanish',
+  'fr': 'French',
+  'de': 'German',
+  'ar': 'Arabic',
+  'pt': 'Portuguese',
+  'ja': 'Japanese',
+  'ko': 'Korean',
+  'ru': 'Russian'
+};
+
 function CourseFilters({ filters, onFilterChange, onClearFilters }) {
-  const languages = ['English', 'Spanish', 'French', 'German'];
-  const levels = ['Beginner', 'Intermediate', 'Advanced'];
-  const sources = ['Coursera', 'MIT OpenCourseWare'];
+  const [options, setOptions] = useState({
+    languages: [],
+    levels: [],
+    sources: []
+  });
+  const [loading, setLoading] = useState(true);
 
-  const handleChange = (filterType, value) => {
-    onFilterChange(filterType, value);
+  useEffect(() => {
+    const fetchOptions = async () => {
+      try {
+        const data = await getFilterOptions();
+        setOptions({
+          languages: data.languages || ['en', 'zh'],
+          levels: data.levels || ['Beginner', 'Intermediate', 'Advanced', 'Mixed'],
+          sources: data.sources || ['Coursera']
+        });
+      } catch (error) {
+        console.error('Error fetching filter options:', error);
+        setOptions({
+          languages: ['en', 'zh'],
+          levels: ['Beginner', 'Intermediate', 'Advanced', 'Mixed'],
+          sources: ['Coursera']
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchOptions();
+  }, []);
+
+  const handleFilterChange = (filterName, value) => {
+    onFilterChange(filterName, value === '' ? null : value);
   };
 
-  const clearFilters = () => {
-    if (onClearFilters) {
-      onClearFilters();
-    }
+  const getLanguageLabel = (code) => {
+    return LANGUAGE_LABELS[code] || code;
   };
+
+  const hasActiveFilters = filters.language || filters.level || filters.source;
 
   return (
     <div className="course-filters">
-      <h3>Filters</h3>
-      
+      <div className="filters-header">
+        <h3>
+          <span className="filter-icon">|</span> Filters
+        </h3>
+      </div>
+
       <div className="filter-group">
-        <label>Language</label>
+        <label htmlFor="language">LANGUAGE</label>
         <select
+          id="language"
           value={filters.language || ''}
-          onChange={(e) => handleChange('language', e.target.value)}
+          onChange={(e) => handleFilterChange('language', e.target.value)}
+          disabled={loading}
         >
           <option value="">All Languages</option>
-          {languages.map(lang => (
-            <option key={lang} value={lang}>{lang}</option>
+          {options.languages.map((lang) => (
+            <option key={lang} value={lang}>
+              {getLanguageLabel(lang)}
+            </option>
           ))}
         </select>
       </div>
 
       <div className="filter-group">
-        <label>Level</label>
+        <label htmlFor="level">LEVEL</label>
         <select
+          id="level"
           value={filters.level || ''}
-          onChange={(e) => handleChange('level', e.target.value)}
+          onChange={(e) => handleFilterChange('level', e.target.value)}
+          disabled={loading}
         >
           <option value="">All Levels</option>
-          {levels.map(level => (
+          {options.levels.map((level) => (
             <option key={level} value={level}>{level}</option>
           ))}
         </select>
       </div>
 
       <div className="filter-group">
-        <label>Source</label>
+        <label htmlFor="source">SOURCE</label>
         <select
+          id="source"
           value={filters.source || ''}
-          onChange={(e) => handleChange('source', e.target.value)}
+          onChange={(e) => handleFilterChange('source', e.target.value)}
+          disabled={loading}
         >
           <option value="">All Sources</option>
-          {sources.map(source => (
+          {options.sources.map((source) => (
             <option key={source} value={source}>{source}</option>
           ))}
         </select>
       </div>
 
-      <button className="clear-filters" onClick={clearFilters}>
-        Clear Filters
-      </button>
+      {hasActiveFilters && (
+        <button 
+          type="button"
+          className="clear-filters-btn" 
+          onClick={onClearFilters}
+        >
+          Clear Filters
+        </button>
+      )}
     </div>
   );
 }

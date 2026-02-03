@@ -11,9 +11,9 @@ function HomePage() {
   const [error, setError] = useState(null);
   const [filters, setFilters] = useState({
     search: '',
-    language: '',
-    level: '',
-    source: '',
+    language: null,
+    level: null,
+    source: null,
     page: 1,
     per_page: 12
   });
@@ -28,7 +28,15 @@ function HomePage() {
     setLoading(true);
     setError(null);
     try {
-      const response = await getCourses(filters);
+      // Build clean filters object (remove null values)
+      const cleanFilters = {};
+      Object.keys(filters).forEach(key => {
+        if (filters[key] !== null && filters[key] !== '') {
+          cleanFilters[key] = filters[key];
+        }
+      });
+      
+      const response = await getCourses(cleanFilters);
       setCourses(response.data || []);
       setPagination(response.meta || {
         total: 0,
@@ -64,9 +72,9 @@ function HomePage() {
   const clearFilters = () => {
     setFilters({
       search: '',
-      language: '',
-      level: '',
-      source: '',
+      language: null,
+      level: null,
+      source: null,
       page: 1,
       per_page: 12
     });

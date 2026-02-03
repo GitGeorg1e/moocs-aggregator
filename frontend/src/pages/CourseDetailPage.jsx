@@ -12,11 +12,19 @@ function CourseDetailPage() {
 
   useEffect(() => {
     const fetchCourseData = async () => {
+      if (!id) {
+        setError('Invalid course ID');
+        setLoading(false);
+        return;
+      }
+
       setLoading(true);
       setError(null);
       
       try {
+        console.log('Fetching course with ID:', id);
         const courseData = await getCourseById(id);
+        console.log('Course data received:', courseData);
         setCourse(courseData);
         
         // Fetch similar courses
@@ -28,8 +36,8 @@ function CourseDetailPage() {
           setSimilarCourses([]);
         }
       } catch (err) {
-        setError('Failed to load course details.');
         console.error('Error fetching course:', err);
+        setError('Failed to load course details.');
       } finally {
         setLoading(false);
       }
@@ -46,9 +54,19 @@ function CourseDetailPage() {
 
   const getSourceClass = () => {
     const name = getSourceName().toLowerCase();
-    if (name.includes('coursera')) return 'coursera';
-    if (name.includes('mit') || name.includes('opencourseware')) return 'mit';
+    if (name.includes('udemy')) return 'udemy';
     return '';
+  };
+
+  const getLanguageLabel = (code) => {
+    const labels = {
+      'en': 'English',
+      'zh': 'Chinese',
+      'es': 'Spanish',
+      'fr': 'French',
+      'de': 'German'
+    };
+    return labels[code] || code;
   };
 
   if (loading) {
@@ -76,7 +94,7 @@ function CourseDetailPage() {
         <Link to="/">Courses</Link> / {course.title}
       </div>
 
-      <span className={`source-badge ${getSourceClass()}`}>
+      <span className={`source-badge-top ${getSourceClass()}`}>
         {getSourceName()}
       </span>
 
@@ -85,7 +103,7 @@ function CourseDetailPage() {
         <div className="course-meta-badges">
           {course.language && (
             <span className="meta-badge language">
-              🌐 {course.language}
+              🌐 {getLanguageLabel(course.language)}
             </span>
           )}
           {course.level && (
@@ -121,7 +139,7 @@ function CourseDetailPage() {
           <dd>{getSourceName()}</dd>
           
           <dt>Language</dt>
-          <dd>{course.language || 'Not specified'}</dd>
+          <dd>{getLanguageLabel(course.language) || 'Not specified'}</dd>
           
           <dt>Level</dt>
           <dd>{course.level || 'Not specified'}</dd>
@@ -138,7 +156,14 @@ function CourseDetailPage() {
       {similarCourses.length > 0 && (
         <section className="similar-courses-section">
           <h2>Similar Courses</h2>
-          <SimilarCourses courses={similarCourses} />
+          <div className="similar-courses-grid">
+            {similarCourses.map((c) => (
+              <Link key={c.id} to={`/course/${c.id}`} className="similar-course-card">
+                <h4>{c.title}</h4>
+                <p>{c.short_description?.substring(0, 100)}...</p>
+              </Link>
+            ))}
+          </div>
         </section>
       )}
     </div>

@@ -7,36 +7,48 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
-  timeout: 30000, // 30 seconds for sync operations
+  timeout: 30000,
 });
 
 /**
  * Get paginated list of courses with optional filters
  */
 export const getCourses = async (filters = {}) => {
-  try {
-    const params = new URLSearchParams();
-    
-    if (filters.search) params.append('q', filters.search);
-    if (filters.language) params.append('language', filters.language);
-    if (filters.level) params.append('level', filters.level);
-    if (filters.source) params.append('source', filters.source);
-    if (filters.page) params.append('page', filters.page);
-    if (filters.per_page) params.append('per_page', filters.per_page);
-    
-    const response = await api.get(`/courses?${params.toString()}`);
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching courses:', error);
-    throw error;
+  const params = new URLSearchParams();
+  
+  if (filters.search && filters.search.trim() !== '') {
+    params.append('search', filters.search);
   }
+  if (filters.language && filters.language !== '') {
+    params.append('language', filters.language);
+  }
+  if (filters.level && filters.level !== '') {
+    params.append('level', filters.level);
+  }
+  if (filters.source && filters.source !== '') {
+    params.append('source', filters.source);
+  }
+  if (filters.page) {
+    params.append('page', filters.page);
+  }
+  if (filters.per_page) {
+    params.append('per_page', filters.per_page);
+  }
+  
+  const queryString = params.toString();
+  const url = queryString ? `/courses?${queryString}` : '/courses';
+  
+  const response = await api.get(url);
+  return response.data;
 };
 
 /**
  * Get course by ID
  */
 export const getCourseById = async (id) => {
+  console.log('API: Fetching course by ID:', id);
   const response = await api.get(`/courses/${id}`);
+  console.log('API: Response:', response.data);
   return response.data;
 };
 
@@ -44,8 +56,13 @@ export const getCourseById = async (id) => {
  * Get similar courses for a given course
  */
 export const getSimilarCourses = async (courseId, limit = 5) => {
-  const response = await api.get(`/courses/${courseId}/similar?limit=${limit}`);
-  return response.data;
+  try {
+    const response = await api.get(`/courses/${courseId}/similar?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching similar courses:', error);
+    return [];
+  }
 };
 
 /**
@@ -57,11 +74,20 @@ export const getAnalytics = async () => {
 };
 
 /**
- * Get available filter options
+ * Get available filter options from database
  */
 export const getFilterOptions = async () => {
-  const response = await api.get('/courses/filters');
-  return response.data;
+  try {
+    const response = await api.get('/courses/filters');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching filter options:', error);
+    return {
+      languages: ['en', 'zh'],
+      levels: ['Beginner', 'Intermediate', 'Advanced', 'Mixed'],
+      sources: ['Coursera']
+    };
+  }
 };
 
 /**
@@ -69,14 +95,6 @@ export const getFilterOptions = async () => {
  */
 export const syncCoursera = async (maxCourses = 50) => {
   const response = await api.post('/sync/coursera', { max_courses: maxCourses });
-  return response.data;
-};
-
-/**
- * Trigger sync for MIT OpenCourseWare
- */
-export const syncMitOcw = async (maxCourses = 50) => {
-  const response = await api.post('/sync/mit_ocw', { max_courses: maxCourses });
   return response.data;
 };
 
