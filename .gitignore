@@ -1,0 +1,35 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+*.pyc *.pyo *.pyd *.pyw *.pyz
+# Egg info
+*.egg-info/
+*.egg
+
+# Environment
+.venv/
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+dist/
+.cache/
+
+*.pdf
+
+# Spark output
+spark_output/
+sgdg
