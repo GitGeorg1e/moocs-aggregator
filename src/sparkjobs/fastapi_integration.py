@@ -249,17 +249,26 @@ async def get_analytics_overview(db: Session = Depends(get_db)):
 async def get_analytics_by_source(db: Session = Depends(get_db)):
     """Get analytics breakdown by source."""
     try:
-        query = "SELECT * FROM analytics_by_source ORDER BY num_courses DESC"
+        query = """
+        SELECT
+            source_name,
+            num_courses,
+            num_languages,
+            num_topics,
+            num_levels
+        FROM analytics_by_source
+        ORDER BY num_courses DESC
+        """
         result = db.execute(text(query))
         rows = result.fetchall()
         
         return [
             {
-                "source": row[1],
-                "num_courses": row[2],
-                "num_languages": row[3],
-                "num_topics": row[4],
-                "num_levels": row[5]
+                "source": row[0],
+                "num_courses": row[1],
+                "num_languages": row[2],
+                "num_topics": row[3],
+                "num_levels": row[4]
             }
             for row in rows
         ]

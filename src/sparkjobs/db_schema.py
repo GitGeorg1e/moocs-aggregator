@@ -47,16 +47,20 @@ CREATE INDEX idx_course_clusters_level ON course_clusters(level);
 CREATE_ANALYTICS_BY_SOURCE_TABLE = """
 CREATE TABLE IF NOT EXISTS analytics_by_source (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    source_id INT NOT NULL,
     source_name VARCHAR(255),
     num_courses INT,
     num_languages INT,
     num_topics INT,
     num_levels INT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT fk_analytics_source
+        FOREIGN KEY (source_id) REFERENCES sources(id) ON DELETE CASCADE,
     CONSTRAINT unique_source UNIQUE(source_name)
 );
 
 CREATE INDEX idx_analytics_source_name ON analytics_by_source(source_name);
+CREATE INDEX idx_analytics_source_id ON analytics_by_source(source_id);
 """
 
 CREATE_ANALYTICS_BY_LANGUAGE_TABLE = """

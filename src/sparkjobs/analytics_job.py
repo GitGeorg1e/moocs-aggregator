@@ -87,7 +87,7 @@ class AnalyticsJob:
         """
         logger.info("Computing source statistics")
         
-        source_stats = courses_df.groupBy("source_name").agg(
+        source_stats = courses_df.groupBy("source_id", "source_name").agg(
             count("id").alias("num_courses"),
             countDistinct("language").alias("num_languages"),
             countDistinct("topic").alias("num_topics"),
