@@ -355,16 +355,36 @@ class CourseraConnector:
         return response.content.decode(encoding, errors="replace")
 
     @staticmethod
-    def _normalize_language(lang: Optional[str]) -> Optional[str]:
+    def _normalize_language(lang: Optional[object]) -> Optional[str]:
         """Normalize language codes (e.g., 'en-US' -> 'en', 'zh-TW' -> 'zh')."""
-        if not lang:
+        if lang is None:
+            return None
+        if isinstance(lang, list):
+            for item in lang:
+                normalized = CourseraConnector._normalize_language(item)
+                if normalized:
+                    return normalized
+            return None
+        if isinstance(lang, dict):
+            for key in ("name", "language", "languageCode", "code", "@id", "value"):
+                normalized = CourseraConnector._normalize_language(lang.get(key))
+                if normalized:
+                    return normalized
+            return None
+        if not isinstance(lang, str):
             return None
         lang = lang.strip()
         if not lang:
             return None
+        lang = lang.replace("_", "-").lower()
+        if lang in CourseraConnector.LANGUAGE_NAME_TO_CODE:
+            return CourseraConnector.LANGUAGE_NAME_TO_CODE[lang]
+        for name, code in CourseraConnector.LANGUAGE_NAME_TO_CODE.items():
+            if name in lang:
+                return code
         # Return full code for important variants, otherwise base language
         # Keep codes like zh-TW, zh-CN, pt-BR distinct
-        return lang.lower()
+        return lang
 
     # Map of common language names to ISO codes
     LANGUAGE_NAME_TO_CODE = {
@@ -411,6 +431,8 @@ class CourseraConnector:
         "malay": "ms",
         "filipino": "fil",
         "tagalog": "tl",
+        "\u0939\u093f\u0902\u0926\u0940": "hi",
+        "\u0939\u093f\u0928\u094d\u0926\u0940": "hi",
         # Chinese variants
         "mandarin": "zh",
         "cantonese": "zh-yue",
