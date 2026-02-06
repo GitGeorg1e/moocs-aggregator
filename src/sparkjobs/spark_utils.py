@@ -271,6 +271,39 @@ class DataFrameSaver:
                     "ADD COLUMN similar_course_topic VARCHAR(100)"
                 )
             )
+
+    @staticmethod
+    def _ensure_course_clusters_schema(conn) -> None:
+        """Ensure course_clusters has the columns expected by Spark jobs."""
+        conn.execute(
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS course_clusters (
+                    id INT AUTO_INCREMENT PRIMARY KEY,
+                    course_id INT NOT NULL,
+                    title VARCHAR(255),
+                    topic VARCHAR(100),
+                    level VARCHAR(50),
+                    cluster_id INT NOT NULL,
+                    cluster_center_distance DOUBLE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+        )
+
+        existing = {
+            row[0]
+            for row in conn.execute(text("SHOW COLUMNS FROM course_clusters")).fetchall()
+        }
+
+        if "cluster_center_distance" not in existing:
+            conn.execute(
+                text(
+                    "ALTER TABLE course_clusters "
+                    "ADD COLUMN cluster_center_distance DOUBLE"
+                )
+            )
     
     @staticmethod
     def save_to_csv(df: DataFrame, path: str, mode: str = "overwrite", header: bool = True):
@@ -355,6 +388,8 @@ class DataFrameSaver:
             with engine.begin() as conn:
                 if table_name == "similar_courses":
                     DataFrameSaver._ensure_similar_courses_schema(conn)
+                elif table_name == "course_clusters":
+                    DataFrameSaver._ensure_course_clusters_schema(conn)
 
                 if mode == "overwrite":
                     conn.execute(text(f"DELETE FROM {table_name}"))

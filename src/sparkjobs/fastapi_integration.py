@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 # This would be in your backend app/api/v1/endpoints/
 
-router = APIRouter(prefix="/api/v1", tags=["spark-results"])
+router = APIRouter()
 
 
 @router.get("/courses/{course_id}/similar")

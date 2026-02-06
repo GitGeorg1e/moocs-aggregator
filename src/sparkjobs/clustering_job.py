@@ -4,12 +4,14 @@ Performs K-means clustering on courses based on their features.
 """
 import logging
 from pyspark.sql import SparkSession, DataFrame
-from pyspark.sql.functions import col, desc, row_number
+from pyspark.sql.functions import col, desc, expr, row_number
 from pyspark.sql.window import Window
 from pyspark.ml.feature import HashingTF, IDF, Tokenizer, StandardScaler, VectorAssembler
 from pyspark.ml import Pipeline
 from pyspark.ml.clustering import KMeans
 from pyspark.ml.evaluation import ClusteringEvaluator
+from pyspark.ml.functions import vector_to_array
+from pyspark.ml.linalg import Vectors
 
 from .spark_utils import (
     SparkSessionManager, DataFrameLoader, TextPreprocessor,
@@ -206,14 +208,40 @@ class CourseClusteringJob:
         logger.info("Analyzing and saving clustering results")
         
         # Combine with original data
+        clustered_features = clustered_df.select(
+            col("course_id"),
+            col("prediction").alias("cluster_id"),
+            col("scaled_features"),
+        )
         result_df = original_df.select(
             col("course_id"),
             col("title"),
             col("topic"),
             col("level")
         ).join(
-            clustered_df.select(col("course_id"), col("prediction").alias("cluster_id")),
+            clustered_features,
             "course_id"
+        )
+
+        # Compute distance to the assigned cluster center in feature space
+        centers = model.clusterCenters()
+        centers_df = self.spark.createDataFrame(
+            [(i, Vectors.dense(center)) for i, center in enumerate(centers)],
+            ["cluster_id", "cluster_center"],
+        )
+
+        result_df = (
+            result_df.join(centers_df, "cluster_id")
+            .withColumn("feature_vec", vector_to_array(col("scaled_features")))
+            .withColumn("center_vec", vector_to_array(col("cluster_center")))
+            .withColumn(
+                "cluster_center_distance",
+                expr(
+                    "sqrt(aggregate(zip_with(feature_vec, center_vec, "
+                    "(x, y) -> (x - y) * (x - y)), 0D, (acc, x) -> acc + x))"
+                ),
+            )
+            .drop("feature_vec", "center_vec", "scaled_features", "cluster_center")
         )
         
         # Analyze cluster compositions

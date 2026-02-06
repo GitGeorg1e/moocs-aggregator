@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS course_clusters (
     topic VARCHAR(100),
     level VARCHAR(50),
     cluster_id INT NOT NULL,
+    cluster_center_distance DOUBLE,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT unique_course_cluster UNIQUE(course_id),
     CONSTRAINT fk_course_clusters_course
