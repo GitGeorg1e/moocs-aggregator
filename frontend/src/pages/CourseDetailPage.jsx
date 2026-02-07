@@ -143,6 +143,13 @@ function CourseDetailPage() {
           
           <dt>Level</dt>
           <dd>{course.level || 'Not specified'}</dd>
+
+          {course.cluster_id !== null && course.cluster_id !== undefined && (
+            <>
+              <dt>Cluster</dt>
+              <dd>Cluster #{course.cluster_id}</dd>
+            </>
+          )}
           
           {course.instructor && (
             <>

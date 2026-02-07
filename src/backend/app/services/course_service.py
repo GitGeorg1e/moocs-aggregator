@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Tuple
 
-from sqlalchemy import or_, cast, String
+from sqlalchemy import or_, cast, String, text
 from sqlalchemy.orm import Session, joinedload
 
 from backend.app.models.course import Course
@@ -84,6 +84,21 @@ class CourseService:
             .filter(Course.id == course_id)
             .first()
         )
+
+    def get_course_cluster_id(self, course_id: int) -> Optional[int]:
+        """Return the Spark cluster ID for a course (if available)."""
+        try:
+            row = self.db.execute(
+                text(
+                    "SELECT cluster_id FROM course_clusters "
+                    "WHERE course_id = :course_id LIMIT 1"
+                ),
+                {"course_id": course_id},
+            ).fetchone()
+        except Exception:
+            return None
+
+        return row[0] if row else None
 
     def get_source_name(self, source_id: int) -> Optional[str]:
         """Ανάκτηση ονόματος source από ID."""

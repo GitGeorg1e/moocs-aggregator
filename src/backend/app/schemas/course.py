@@ -64,6 +64,7 @@ class CourseDetailResponse(BaseModel):
     course_url: str
     enrollment_url: Optional[str] = None
     image_url: Optional[str] = None
+    cluster_id: Optional[int] = None
     last_updated_at_source: Optional[datetime] = None
     created_at: datetime
     updated_at: datetime

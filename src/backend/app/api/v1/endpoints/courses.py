@@ -129,6 +129,7 @@ async def get_course(
         raise HTTPException(status_code=404, detail="Course not found")
 
     source_name = course.source.name if course.source else None
+    cluster_id = service.get_course_cluster_id(course_id)
 
     return CourseDetailResponse(
         id=course.id,
@@ -145,6 +146,7 @@ async def get_course(
         course_url=course.course_url,
         enrollment_url=course.enrollment_url,
         image_url=course.image_url,
+        cluster_id=cluster_id,
         last_updated_at_source=course.last_updated_at_source,
         created_at=course.created_at,
         updated_at=course.updated_at,
