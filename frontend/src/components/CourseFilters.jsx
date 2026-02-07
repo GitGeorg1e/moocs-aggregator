@@ -20,7 +20,8 @@ function CourseFilters({ filters, onFilterChange, onClearFilters }) {
   const [options, setOptions] = useState({
     languages: [],
     levels: [],
-    sources: []
+    sources: [],
+    topics: []
   });
   const [loading, setLoading] = useState(true);
 
@@ -28,17 +29,20 @@ function CourseFilters({ filters, onFilterChange, onClearFilters }) {
     const fetchOptions = async () => {
       try {
         const data = await getFilterOptions();
+        console.log('Filter options received:', data);
         setOptions({
-          languages: data.languages || ['en', 'zh'],
-          levels: data.levels || ['Beginner', 'Intermediate', 'Advanced', 'Mixed'],
-          sources: data.sources || ['Coursera']
+          languages: data.languages || [],
+          levels: data.levels || [],
+          sources: data.sources || [],
+          topics: data.topics || []
         });
       } catch (error) {
         console.error('Error fetching filter options:', error);
         setOptions({
           languages: ['en', 'zh'],
           levels: ['Beginner', 'Intermediate', 'Advanced', 'Mixed'],
-          sources: ['Coursera']
+          sources: ['Coursera'],
+          topics: []
         });
       } finally {
         setLoading(false);
@@ -55,13 +59,15 @@ function CourseFilters({ filters, onFilterChange, onClearFilters }) {
     return LANGUAGE_LABELS[code] || code;
   };
 
-  const hasActiveFilters = filters.language || filters.level || filters.source;
+  const hasActiveFilters = filters.language || filters.level || filters.source || filters.topic;
 
   return (
     <div className="course-filters">
       <div className="filters-header">
         <h3>
-          <span className="filter-icon">|</span> Filters
+          <span className="filter-icon">|</span>
+          <span className="filter-icon-bolt">⚡</span>
+          Filters
         </h3>
       </div>
 
@@ -108,6 +114,21 @@ function CourseFilters({ filters, onFilterChange, onClearFilters }) {
           <option value="">All Sources</option>
           {options.sources.map((source) => (
             <option key={source} value={source}>{source}</option>
+          ))}
+        </select>
+      </div>
+
+      <div className="filter-group">
+        <label htmlFor="topic">TOPIC</label>
+        <select
+          id="topic"
+          value={filters.topic || ''}
+          onChange={(e) => handleFilterChange('topic', e.target.value)}
+          disabled={loading}
+        >
+          <option value="">All Topics</option>
+          {options.topics.map((topic) => (
+            <option key={topic} value={topic}>{topic}</option>
           ))}
         </select>
       </div>

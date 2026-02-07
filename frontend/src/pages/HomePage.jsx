@@ -14,6 +14,7 @@ function HomePage() {
     language: null,
     level: null,
     source: null,
+    topic: null,
     page: 1,
     per_page: 12
   });
@@ -75,6 +76,7 @@ function HomePage() {
       language: null,
       level: null,
       source: null,
+      topic: null,
       page: 1,
       per_page: 12
     });

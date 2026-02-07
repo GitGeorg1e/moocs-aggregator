@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import List, Optional, Tuple
 
-from sqlalchemy import or_
+from sqlalchemy import or_, cast, String
 from sqlalchemy.orm import Session, joinedload
 
 from backend.app.models.course import Course
@@ -23,6 +23,7 @@ class CourseService:
         level: Optional[str] = None,
         source: Optional[str] = None,
         topic: Optional[str] = None,
+        keyword: Optional[str] = None,
         page: int = 1,
         per_page: int = 20,
     ) -> Tuple[List[Course], int]:
@@ -55,6 +56,10 @@ class CourseService:
             query = query.filter(Course.topic.ilike(f"%{topic}%"))
         if source:
             query = query.join(Source).filter(Source.name.ilike(f"%{source}%"))
+        
+        # Keyword filter - keywords is comma-separated string
+        if keyword:
+            query = query.filter(Course.keywords.ilike(f"%{keyword}%"))
 
         # Count total πριν το pagination
         total = query.count()

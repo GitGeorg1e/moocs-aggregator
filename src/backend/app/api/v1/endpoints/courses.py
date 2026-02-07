@@ -8,6 +8,8 @@ from sqlalchemy.orm import Session
 
 from backend.app.core.db import get_db
 from backend.app.services.course_service import CourseService
+from backend.app.models.course import Course
+from backend.app.models.source import Source
 from backend.app.schemas.course import (
     CourseResponse,
     CourseDetailResponse,
@@ -19,31 +21,57 @@ from backend.app.schemas.course import (
 router = APIRouter()
 
 
+@router.get("/filters")
+async def get_filter_options(db: Session = Depends(get_db)):
+    """Get available filter options from database"""
+    
+    # Get unique languages
+    languages_query = db.query(Course.language).filter(Course.language.isnot(None)).distinct().all()
+    languages = [lang[0] for lang in languages_query if lang[0] and lang[0].strip()]
+    
+    # Get unique levels
+    levels_query = db.query(Course.level).filter(Course.level.isnot(None)).distinct().all()
+    levels = [level[0] for level in levels_query if level[0] and level[0].strip()]
+    
+    # Get unique sources
+    sources_query = db.query(Source.name).distinct().all()
+    sources = [source[0] for source in sources_query if source[0] and source[0].strip()]
+    
+    # Get unique topics
+    topics_query = db.query(Course.topic).filter(Course.topic.isnot(None)).distinct().all()
+    topics = [topic[0] for topic in topics_query if topic[0] and topic[0].strip()]
+    
+    return {
+        "languages": sorted(languages),
+        "levels": sorted(levels),
+        "sources": sorted(sources),
+        "topics": sorted(topics)
+    }
+
+
 @router.get(
     "",
     response_model=CourseListResponse,
     summary="Λίστα μαθημάτων με αναζήτηση και φίλτρα",
-    description="""
-    Επιστρέφει paginated λίστα μαθημάτων με δυνατότητα:
-    - Full-text search στον τίτλο, περιγραφή και keywords
-    - Φιλτράρισμα κατά γλώσσα, επίπεδο, πηγή, θέμα
-    - Pagination με page και per_page parameters
-    """,
 )
 async def get_courses(
     q: Optional[str] = Query(None, description="Search query"),
+    search: Optional[str] = Query(None, description="Search query (alias for q)"),
     language: Optional[str] = Query(None, description="Φίλτρο γλώσσας"),
     level: Optional[str] = Query(None, description="Φίλτρο επιπέδου"),
     source: Optional[str] = Query(None, description="Φίλτρο πηγής (coursera, mit_ocw)"),
-    topic: Optional[str] = Query(None, description="Φίλτρο θέματος"),
+    topic: Optional[str] = Query(None, description="Φίλτρο θεματικής περιοχής"),
     page: int = Query(1, ge=1, description="Αριθμός σελίδας"),
     per_page: int = Query(20, ge=1, le=100, description="Αποτελέσματα ανά σελίδα"),
     db: Session = Depends(get_db),
 ):
     """Ανάκτηση λίστας μαθημάτων."""
+    # Use search if q is not provided
+    search_query = q or search
+    
     service = CourseService(db)
     courses, total = service.get_courses(
-        q=q,
+        q=search_query,
         language=language,
         level=level,
         source=source,
@@ -54,7 +82,6 @@ async def get_courses(
 
     total_pages = math.ceil(total / per_page) if total > 0 else 1
 
-    # Build response
     course_responses = []
     for course in courses:
         source_name = service.get_source_name(course.source_id)
@@ -137,7 +164,6 @@ async def get_similar_courses(
     """Ανάκτηση παρόμοιων μαθημάτων από Spark TF-IDF analysis."""
     service = CourseService(db)
 
-    # Έλεγχος ότι υπάρχει το course
     course = service.get_course_by_id(course_id)
     if not course:
         raise HTTPException(status_code=404, detail="Course not found")

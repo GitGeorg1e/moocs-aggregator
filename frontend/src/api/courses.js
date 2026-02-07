@@ -28,6 +28,9 @@ export const getCourses = async (filters = {}) => {
   if (filters.source && filters.source !== '') {
     params.append('source', filters.source);
   }
+  if (filters.topic && filters.topic !== '') {
+    params.append('topic', filters.topic);
+  }
   if (filters.page) {
     params.append('page', filters.page);
   }
@@ -77,17 +80,8 @@ export const getAnalytics = async () => {
  * Get available filter options from database
  */
 export const getFilterOptions = async () => {
-  try {
-    const response = await api.get('/courses/filters');
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching filter options:', error);
-    return {
-      languages: ['en', 'zh'],
-      levels: ['Beginner', 'Intermediate', 'Advanced', 'Mixed'],
-      sources: ['Coursera']
-    };
-  }
+  const response = await api.get('/courses/filters');
+  return response.data;
 };
 
 /**
@@ -103,6 +97,14 @@ export const syncCoursera = async (maxCourses = 50) => {
  */
 export const getSyncStatus = async (taskId) => {
   const response = await api.get(`/sync/status/${taskId}`);
+  return response.data;
+};
+
+/**
+ * Get keywords from courses
+ */
+export const getKeywords = async () => {
+  const response = await api.get('/courses/keywords');
   return response.data;
 };
 
