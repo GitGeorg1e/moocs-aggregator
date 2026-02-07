@@ -40,8 +40,9 @@ app = FastAPI(
     title="MOOCs Aggregator API",
     description="API for aggregating courses from multiple MOOC platforms",
     version="1.0.0",
+    lifespan=lifespan,
     docs_url="/docs",
-    redoc_url="/redoc"
+    redoc_url="/redoc",
 )
 
 # CORS configuration - allow React frontend

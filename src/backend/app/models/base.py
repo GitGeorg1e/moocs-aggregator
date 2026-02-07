@@ -1,16 +1,10 @@
 from __future__ import annotations
-from abc import ABC, abstractmethod
 
 from datetime import datetime
-from typing import Iterable, Optional
+
 from sqlalchemy import DateTime, func
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
-from backend.app.schemas.course import CourseCreate 
 
-class BaseConnector(ABC):
-    @abstractmethod
-    def fetch_courses(self, since: Optional[datetime] = None) -> Iterable[CourseCreate]:
-        raise NotImplementedError
 
 class Base(DeclarativeBase):
     """Base class for all ORM models."""

@@ -12,10 +12,11 @@ from bs4 import BeautifulSoup
 from lxml import etree
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+from backend.app.connectors.base import BaseConnector
 from backend.app.schemas.course import CourseCreate
 
 
-class CourseraConnector:
+class CourseraConnector(BaseConnector):
     def __init__(
         self,
         source_id: int,

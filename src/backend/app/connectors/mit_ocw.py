@@ -12,10 +12,11 @@ from bs4 import BeautifulSoup
 from lxml import etree
 from tenacity import retry, stop_after_attempt, wait_exponential
 
+from backend.app.connectors.base import BaseConnector
 from backend.app.schemas.course import CourseCreate
 
 
-class MitOcwConnector:
+class MitOcwConnector(BaseConnector):
     TOPIC_HEADING_RE = re.compile(r"\btopics?\b", re.I)
     LEVEL_VALUE_RE = re.compile(
         r"\b(undergraduate|graduate|high school|non[-\s]?credit|postgraduate)\b",

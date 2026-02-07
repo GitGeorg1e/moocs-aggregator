@@ -1,3 +1,8 @@
-from backend.app.api.v1.endpoints import courses, sync, analytics, spark
+"""
+API v1 endpoint modules.
 
-__all__ = ["courses", "sync", "analytics", "spark"]
+analytics  – aggregated course statistics
+courses    – CRUD and search
+spark      – Spark ML job triggers and result queries
+sync       – data-harvesting triggers
+"""

@@ -5,7 +5,7 @@ from sqlalchemy.orm import Session
 from backend.app.core.db import get_db
 from backend.app.models.course import Course
 from backend.app.models.source import Source
-from backend.app.schemas.course import AnalyticsResponse
+from backend.app.schemas.analytics import AnalyticsResponse
 
 router = APIRouter()
 

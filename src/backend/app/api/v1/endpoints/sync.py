@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, HTTPException
 
-from backend.app.schemas.course import SyncSource, SyncRequest, SyncResponse
+from backend.app.schemas.sync import SyncSource, SyncRequest, SyncResponse
 from backend.app.services.sync_service import SyncService
 
 router = APIRouter()

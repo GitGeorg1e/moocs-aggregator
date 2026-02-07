@@ -33,8 +33,10 @@ class SimilarCourse(Base):
     course = relationship(
         "Course",
         foreign_keys=[course_id],
+        overlaps="similar_courses",
     )
     similar_course = relationship(
         "Course",
         foreign_keys=[similar_course_id],
+        overlaps="similar_to",
     )
