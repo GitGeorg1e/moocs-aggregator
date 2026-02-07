@@ -1,9 +1,8 @@
 .course-filters {
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(10px);
-  border-radius: 16px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  border-radius: 12px;
   padding: 1.5rem;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: white;
 }
 
 .filters-header {
@@ -26,74 +25,77 @@
   font-size: 1.5rem;
 }
 
+.filter-icon-bolt {
+  color: #f59e0b;
+  font-size: 1.2rem;
+}
+
 .filter-group {
   margin-bottom: 1.25rem;
 }
 
 .filter-group label {
   display: block;
-  color: rgba(255, 255, 255, 0.6);
   font-size: 0.75rem;
   font-weight: 600;
-  letter-spacing: 1px;
+  color: #9ca3af;
   margin-bottom: 0.5rem;
-  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .filter-group select {
   width: 100%;
-  padding: 0.875rem 1rem;
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 10px;
-  color: white;
+  padding: 0.75rem;
+  border: 1px solid #374151;
+  border-radius: 8px;
   font-size: 0.95rem;
+  background-color: #1f2937;
+  color: white;
   cursor: pointer;
   appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' fill='white' viewBox='0 0 16 16'%3E%3Cpath d='M8 10.5l-5-5h10l-5 5z'/%3E%3C/svg%3E");
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%239ca3af'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 1rem center;
-  transition: all 0.2s ease;
-}
-
-.filter-group select:hover {
-  border-color: rgba(255, 255, 255, 0.4);
-  background-color: rgba(255, 255, 255, 0.15);
+  background-position: right 0.75rem center;
+  background-size: 1rem;
 }
 
 .filter-group select:focus {
   outline: none;
-  border-color: #a855f7;
-  box-shadow: 0 0 0 2px rgba(168, 85, 247, 0.3);
-}
-
-.filter-group select option {
-  background: #1a1a2e;
-  color: white;
-  padding: 0.5rem;
+  border-color: #6366f1;
+  box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.25);
 }
 
 .filter-group select:disabled {
-  opacity: 0.5;
+  background-color: #374151;
   cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.filter-group select option {
+  background-color: #1f2937;
+  color: white;
 }
 
 .clear-filters-btn {
   width: 100%;
-  padding: 0.875rem;
-  background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  border-radius: 10px;
-  color: rgba(255, 255, 255, 0.8);
+  padding: 0.75rem 1rem;
+  margin-top: 1rem;
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
   font-size: 0.9rem;
   font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  margin-top: 0.5rem;
+  transition: background-color 0.2s;
 }
 
 .clear-filters-btn:hover {
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.5);
-  color: white;
+  background-color: #4338ca;
+}
+
+@media (max-width: 768px) {
+  .course-filters {
+    margin-bottom: 1rem;
+  }
 }
