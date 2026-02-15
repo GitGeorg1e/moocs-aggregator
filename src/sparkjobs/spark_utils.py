@@ -7,9 +7,12 @@ from pyspark.sql.functions import col, split, lower, regexp_replace, concat_ws
 from typing import Dict, List, Optional
 from .config import SparkConfig
 import logging
+import math
+import os
+import sys
+
 import pandas as pd
 from sqlalchemy import create_engine, text
-import math
 
 logger = logging.getLogger(__name__)
 
@@ -32,10 +35,45 @@ class SparkSessionManager:
         """
         if SparkSessionManager._instance is None:
             try:
-                builder = SparkSession.builder \
-                    .appName(app_name) \
-                    .config("spark.sql.shuffle.partitions", "200") \
+                python_exec = sys.executable
+                os.environ.setdefault("PYSPARK_PYTHON", python_exec)
+                os.environ.setdefault("PYSPARK_DRIVER_PYTHON", python_exec)
+
+                is_windows = sys.platform.startswith("win")
+                master = SparkConfig.MASTER
+                if is_windows and master in {"local[*]", "local"}:
+                    master = "local[2]"
+
+                shuffle_partitions = "8" if is_windows else "200"
+                default_parallelism = "8" if is_windows else None
+
+                builder = (
+                    SparkSession.builder
+                    .appName(app_name)
+                    .master(master)
+                    .config("spark.sql.shuffle.partitions", shuffle_partitions)
                     .config("spark.sql.adaptive.enabled", "true")
+                    .config("spark.pyspark.python", python_exec)
+                    .config("spark.pyspark.driver.python", python_exec)
+                    .config("spark.executorEnv.PYSPARK_PYTHON", python_exec)
+                    .config("spark.python.worker.reuse", "false")
+                    .config("spark.python.worker.faulthandler.enabled", "true")
+                    .config("spark.sql.execution.pyspark.udf.faulthandler.enabled", "true")
+                )
+
+                if default_parallelism:
+                    builder = builder.config(
+                        "spark.default.parallelism", default_parallelism
+                    )
+
+                if is_windows:
+                    builder = (
+                        builder
+                        .config("spark.ui.enabled", "false")
+                        .config("spark.driver.host", "127.0.0.1")
+                        .config("spark.driver.bindAddress", "127.0.0.1")
+                        .config("spark.local.ip", "127.0.0.1")
+                    )
                 
                 SparkSessionManager._instance = builder.getOrCreate()
                 logger.info(f"Created Spark session: {app_name}")

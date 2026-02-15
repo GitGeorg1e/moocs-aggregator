@@ -11,7 +11,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def run_similarity_job():
+def run_similarity_job(stop_session: bool = True):
     """Run course similarity job."""
     setup_logging()
     try:
@@ -21,10 +21,11 @@ def run_similarity_job():
         logger.error(f"Similarity job failed: {e}")
         raise
     finally:
-        SparkSessionManager.stop_spark_session()
+        if stop_session:
+            SparkSessionManager.stop_spark_session()
 
 
-def run_clustering_job():
+def run_clustering_job(stop_session: bool = True):
     """Run course clustering job."""
     setup_logging()
     try:
@@ -34,10 +35,11 @@ def run_clustering_job():
         logger.error(f"Clustering job failed: {e}")
         raise
     finally:
-        SparkSessionManager.stop_spark_session()
+        if stop_session:
+            SparkSessionManager.stop_spark_session()
 
 
-def run_analytics_job():
+def run_analytics_job(stop_session: bool = True):
     """Run analytics job."""
     setup_logging()
     try:
@@ -47,7 +49,8 @@ def run_analytics_job():
         logger.error(f"Analytics job failed: {e}")
         raise
     finally:
-        SparkSessionManager.stop_spark_session()
+        if stop_session:
+            SparkSessionManager.stop_spark_session()
 
 
 def run_all_jobs():
@@ -59,17 +62,17 @@ def run_all_jobs():
         logger.info("=" * 50)
         logger.info("Running Similarity Job")
         logger.info("=" * 50)
-        run_similarity_job()
+        run_similarity_job(stop_session=False)
         
         logger.info("=" * 50)
         logger.info("Running Clustering Job")
         logger.info("=" * 50)
-        run_clustering_job()
+        run_clustering_job(stop_session=False)
         
         logger.info("=" * 50)
         logger.info("Running Analytics Job")
         logger.info("=" * 50)
-        run_analytics_job()
+        run_analytics_job(stop_session=False)
         
         logger.info("=" * 50)
         logger.info("All jobs completed successfully!")
@@ -78,6 +81,8 @@ def run_all_jobs():
     except Exception as e:
         logger.error(f"Job pipeline failed: {e}")
         raise
+    finally:
+        SparkSessionManager.stop_spark_session()
 
 
 if __name__ == "__main__":

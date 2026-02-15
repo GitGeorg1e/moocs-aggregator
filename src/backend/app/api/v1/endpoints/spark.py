@@ -4,7 +4,10 @@ Spark ML endpoints — trigger jobs and query Spark-generated results.
 from __future__ import annotations
 
 import logging
-import threading
+import os
+import subprocess
+import sys
+from pathlib import Path
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import text
@@ -17,6 +20,29 @@ logger = logging.getLogger(__name__)
 router = APIRouter()
 
 
+# ── Helpers ───────────────────────────────────────────────────────────
+
+
+def _sparkjobs_cwd() -> Path:
+    """Return the src/ directory so sparkjobs is importable as a module."""
+    return Path(__file__).resolve().parents[5]
+
+
+def _run_spark_job(job_name: str, background: bool) -> dict:
+    cmd = [sys.executable, "-m", "sparkjobs", job_name]
+    env = os.environ.copy()
+    env.setdefault("PYTHONPATH", str(_sparkjobs_cwd()))
+
+    if background:
+        subprocess.Popen(cmd, cwd=_sparkjobs_cwd(), env=env)
+        return {"status": "started", "job": job_name, "background": True}
+
+    result = subprocess.run(cmd, cwd=_sparkjobs_cwd(), env=env)
+    if result.returncode != 0:
+        raise HTTPException(status_code=500, detail="Error running job")
+    return {"status": "completed", "job": job_name, "background": False}
+
+
 # ── Spark job triggers ────────────────────────────────────────────────
 
 
@@ -24,13 +50,7 @@ router = APIRouter()
 async def trigger_similarity_job(background: bool = True):
     """Trigger the Spark course-similarity job."""
     try:
-        from sparkjobs import run_similarity_job
-
-        if background:
-            threading.Thread(target=run_similarity_job, daemon=True).start()
-            return {"status": "started", "job": "similarity", "background": True}
-        run_similarity_job()
-        return {"status": "completed", "job": "similarity", "background": False}
+        return _run_spark_job("similarity", background)
     except Exception as e:
         logger.error(f"Error running similarity job: {e}")
         raise HTTPException(status_code=500, detail="Error running job")
@@ -40,13 +60,7 @@ async def trigger_similarity_job(background: bool = True):
 async def trigger_clustering_job(background: bool = True):
     """Trigger the Spark clustering job."""
     try:
-        from sparkjobs import run_clustering_job
-
-        if background:
-            threading.Thread(target=run_clustering_job, daemon=True).start()
-            return {"status": "started", "job": "clustering", "background": True}
-        run_clustering_job()
-        return {"status": "completed", "job": "clustering", "background": False}
+        return _run_spark_job("clustering", background)
     except Exception as e:
         logger.error(f"Error running clustering job: {e}")
         raise HTTPException(status_code=500, detail="Error running job")
@@ -56,13 +70,7 @@ async def trigger_clustering_job(background: bool = True):
 async def trigger_analytics_job(background: bool = True):
     """Trigger the Spark analytics job."""
     try:
-        from sparkjobs import run_analytics_job
-
-        if background:
-            threading.Thread(target=run_analytics_job, daemon=True).start()
-            return {"status": "started", "job": "analytics", "background": True}
-        run_analytics_job()
-        return {"status": "completed", "job": "analytics", "background": False}
+        return _run_spark_job("analytics", background)
     except Exception as e:
         logger.error(f"Error running analytics job: {e}")
         raise HTTPException(status_code=500, detail="Error running job")
